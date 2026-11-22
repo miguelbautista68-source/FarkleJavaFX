@@ -3,6 +3,8 @@ package org.uabc.ic.farklejavafx;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.uabc.ic.farklejavafx.controlador.ControladorFarkle;
+import org.uabc.ic.farklejavafx.vista.VistaFarkle;
 
 public class Main extends Application {
 

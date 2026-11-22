@@ -1,5 +1,6 @@
 package org.uabc.ic.farklejavafx.modelo;
 
+// Clase base del dado
 public class Dado {
     private int valor;
     private boolean seleccionado;
@@ -11,6 +12,7 @@ public class Dado {
         tirar();
     }
 
+    //Metodo para randomizar el dado
     public void tirar() {
         valor = (int) (Math.random() * 6) + 1;
     }
@@ -19,7 +21,7 @@ public class Dado {
         return valor;
     }
 
-    public boolean isSeleccionado() {
+    public boolean estaSeleccionado() {
         return seleccionado;
     }
 
@@ -27,7 +29,7 @@ public class Dado {
         this.seleccionado = seleccionado;
     }
 
-    public boolean isApartado() {
+    public boolean estaApartado() {
         return apartado;
     }
 
@@ -35,7 +37,9 @@ public class Dado {
         this.apartado = apartado;
     }
 
+    // Texto con el valor del dado y su estado actual
+    @Override
     public String toString() {
-        return "Dado de " + valor + "seleccionado: " + seleccionado + "apartado: " + apartado;
+        return "Dado de " + valor + ", seleccionado: " + seleccionado + ", apartado: " + apartado;
     }
 }

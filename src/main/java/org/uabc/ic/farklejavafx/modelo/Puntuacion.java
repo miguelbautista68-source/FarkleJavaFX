@@ -2,10 +2,12 @@ package org.uabc.ic.farklejavafx.modelo;
 
 import java.util.ArrayList;
 
+//Aqui se declaran los valores de puntuacion, cuanto vale cada dado y las variables varias que se utilizan.
 public class Puntuacion {
-    /**
-     * Metodo para validar si al lanzar el dado sale alguno de estos valores, los cuales son menos probables pero mas
-     * interactuvimos*/
+
+    private static final String[] NOMBRES = {"", "1", "2", "3", "4", "5", "6"};
+
+    //Metodo para evaluar si al lanzar un dado, sale uno de estos valores (ejemplo: escalera, cuatro par, etc)
     public static int calcular(ArrayList<Integer> valores) {
         int[] conteo = contar(valores);
         int total = 0;
@@ -25,8 +27,8 @@ public class Puntuacion {
             }
         }
 
-        //Si no se cumple los valores de arriba, da continuidad para determianar el puntaje
-        for (int valor = 1; valor <= 6; valor = valor + 1) {
+        //Si no se cumple ningun combo, evalua maualmente el puntaje
+        for (int valor = 1; valor <= 6; valor++) {
             int cantidad = conteo[valor];
 
             if (cantidad >= 3) {
@@ -45,8 +47,6 @@ public class Puntuacion {
         return total;
     }
 
-    private static final String[] NOMBRES = {"", "Un", "Dos", "Tres", "Cuatro", "Cinco", "Seis"};
-
     //Ciclo que divide cuantas valores de cada cada tiene, si a 2 de 1, 4 de 2 y asi.
     public static int[] contar(ArrayList<Integer> valores) {
         int[] conteo = new int[7];
@@ -56,16 +56,18 @@ public class Puntuacion {
         return conteo;
     }
 
-    // Cuántos números distintos aparecen exactamente "cantidad" de veces
+    //Evalua cuantos numeros distintos aparecen exactamente x cantidad de veces
     private static int cuantosTienen(int[] conteo, int cantidad) {
         int total = 0;
-        for (int valor = 1; valor <= 6; valor = valor + 1) {
+        for (int valor = 1; valor <= 6; valor++) {
             if (conteo[valor] == cantidad) {
                 total = total + 1;
             }
         }
         return total;
     }
+
+    //==== Aqui es donde se declaran los metodos estaticos de cada combo
 
     private static boolean esEscalera(int[] conteo) {
         return cuantosTienen(conteo, 1) == 6;
@@ -83,7 +85,7 @@ public class Puntuacion {
         return cuantosTienen(conteo, 2) == 3;
     }
 
-    // Puntos de tres o más dados iguales
+    //Puntos de tres o mas dados iguales
     private static int puntosIguales(int valor, int cantidad) {
         if (cantidad == 6) {
             return 3000;
@@ -100,7 +102,7 @@ public class Puntuacion {
         return valor * 100;
     }
 
-    //Se encarga de validar que en cada ronda los valores se muestren la validacion de que se ejecuto una combinacion, si no, regresara que no se hizo
+    //Se encarga de validar que en cada ronda se ejecuto una combinacion, sino lo hace regresara error
     public static boolean hayPuntos(ArrayList<Integer> valores) {
         int[] conteo = contar(valores);
 
@@ -108,13 +110,12 @@ public class Puntuacion {
             return true;
         }
 
-        for (int valor = 1; valor <= 6; valor = valor + 1) {
+        for (int valor = 1; valor <= 6; valor++) {
             if (conteo[valor] >= 3) {
                 return true;
             }
         }
 
-        // Escalera o tres pares (solo se dan con 6 dados)
         if (valores.size() == 6 && calcular(valores) > 0) {
             return true;
         }
@@ -122,7 +123,7 @@ public class Puntuacion {
         return false;
     }
 
-    //Conteo para describir las combinaciones mas dificiles
+    //Aqui se describen con texto que combinaciones se hicieron
     public static String describir(ArrayList<Integer> valores) {
         int[] conteo = contar(valores);
 
@@ -142,7 +143,7 @@ public class Puntuacion {
         }
 
         ArrayList<String> partes = new ArrayList<>();
-        for (int valor = 1; valor <= 6; valor = valor + 1) {
+        for (int valor = 1; valor <= 6; valor++) {
             int cantidad = conteo[valor];
 
             if (cantidad > 0) {
@@ -155,5 +156,43 @@ public class Puntuacion {
         }
 
         return String.join(" + ", partes);
+    }
+
+    // Lista los combos que se pueden hacer con estos dados, uno por línea, con sus puntos
+    public static String combosPosibles(ArrayList<Integer> valores) {
+        int[] conteo = contar(valores);
+        ArrayList<String> lineas = new ArrayList<>();
+
+        if (valores.size() == 6) {
+            if (esEscalera(conteo) == true) {
+                lineas.add("Escalera (1500 puntos)");
+            }
+            if (sonDosTercias(conteo) == true) {
+                lineas.add("Dos tercias (2500 puntos)");
+            }
+            if (esCuatroConPar(conteo) == true) {
+                lineas.add("Cuatro iguales con par (1500 puntos)");
+            }
+            if (sonTresPares(conteo) == true) {
+                lineas.add("Tres pares (1500 puntos)");
+            }
+        }
+
+        for (int valor = 1; valor <= 6; valor++) {
+            int cantidad = conteo[valor];
+
+            if (cantidad >= 3) {
+                lineas.add(NOMBRES[cantidad] + " " + valor + "s (" + puntosIguales(valor, cantidad) + ")");
+            } else if (cantidad > 0 && valor == 1) {
+                lineas.add(cantidad + " de 1 (" + (cantidad * 100) + ")");
+            } else if (cantidad > 0 && valor == 5) {
+                lineas.add(cantidad + " de 5 (" + (cantidad * 50) + ")");
+            }
+        }
+
+        if (lineas.isEmpty() == true) {
+            return "Ninguno";
+        }
+        return String.join("\n", lineas);
     }
 }

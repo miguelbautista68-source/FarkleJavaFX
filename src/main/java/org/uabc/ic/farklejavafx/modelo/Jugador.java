@@ -1,5 +1,6 @@
 package org.uabc.ic.farklejavafx.modelo;
 
+//Clase padre de los jugadores
 public abstract class Jugador {
     private String nombre;
     private int puntos;
@@ -11,7 +12,7 @@ public abstract class Jugador {
         this.enJuego = false;
     }
 
-    public Jugador(){
+    public Jugador() {
         nombre = "Victor";
         puntos = 0;
         enJuego = false;
@@ -36,8 +37,9 @@ public abstract class Jugador {
         return enJuego;
     }
 
-    public String toString (){
-        return "El jugador " + nombre + " tiene la cantidad de puntos: " +  puntos + ", estado de juego: " + enJuego;
+    //toString
+    @Override
+    public String toString() {
+        return "El jugador " + nombre + " tiene la cantidad de puntos: " + puntos + ", estado de juego: " + enJuego;
     }
 }
-

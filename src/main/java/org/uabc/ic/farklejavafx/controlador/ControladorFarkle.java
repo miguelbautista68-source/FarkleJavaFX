@@ -1,11 +1,10 @@
 package org.uabc.ic.farklejavafx.controlador;
 
 import org.uabc.ic.farklejavafx.vista.VistaFarkle;
-import javafx.animation.PauseTransition;
-import javafx.util.Duration;
+
 /**
- * Conecta la vista con el modelo: recibe los clics, se los pasa al juego
- * y le pide a la vista que se actualice.
+ * Conecta la vista con el modelo, aqui recibe los clic y vista se actualiza.
+ * ESTA CLASE lo que hace es administrar los turnos, le da indicaciones a los botones (en vista) y acomoda a los bots o personas que jueguen
  */
 public class ControladorFarkle {
 
@@ -14,22 +13,22 @@ public class ControladorFarkle {
     private int cantidadBots;
     private boolean botsElegidos;
 
+    // Guarda la vista, pregunta cuántos bots van a jugar y conecta los botones de selección
+    // Guarda la vista y pregunta cuantos bots jugaran, luego conecta los botones de seleccion
     public ControladorFarkle(VistaFarkle vista) {
         this.vista = vista;
         this.juego = null;
         this.botsElegidos = false;
 
-        vista.mostrarPregunta("¿Cuántos bots van a jugar?");
+        vista.mostrarPregunta("Cuantos bots van a jugar?");
         conectarBotonesSeleccion();
     }
 
-    // ---------------------------------------------------------------
-    // Selección de bots y personas
-    // ---------------------------------------------------------------
+    //===== Aqui se selecciionan de bots y personas
 
-    // LAMBDAS: cada botón de la selección manda su número al controlador
+    //Cada boton de seleccion manda su numero al controlador (los botones que se muestran en pantalla)
     private void conectarBotonesSeleccion() {
-        for (int i = 0; i < vista.getBotonesSeleccion().size(); i = i + 1) {
+        for (int i = 0; i < vista.getBotonesSeleccion().size(); i++) {
             int cantidad = i;
             vista.getBotonesSeleccion().get(i).setOnAction(evento -> {
                 alElegirCantidad(cantidad);
@@ -37,18 +36,19 @@ public class ControladorFarkle {
         }
     }
 
-    // La primera vez es la cantidad de bots, la segunda la de personas
+    // Antes se eligieron la cantidad de bots, ahora se eligen la cantidad de personas
     private void alElegirCantidad(int cantidad) {
         if (botsElegidos == false) {
             cantidadBots = cantidad;
             botsElegidos = true;
-            vista.mostrarPregunta("¿Cuántas personas van a jugar?");
+            vista.mostrarPregunta("Cuantas personas van a jugar?");
             return;
         }
 
         empezarJuego(cantidad);
     }
 
+    //Crea el juego con las personas elegidas (bots y personas), cambia la pantlla y empieza el turno
     private void empezarJuego(int personas) {
         juego = new JuegoFarkle(personas, cantidadBots);
         vista.mostrarJuego(juego);
@@ -57,11 +57,9 @@ public class ControladorFarkle {
         revisarTurnoComputadora();
     }
 
-    // ---------------------------------------------------------------
-    // Juego
-    // ---------------------------------------------------------------
+    // === Desde aqui empieza el juego
 
-    // LAMBDAS: cada botón ejecuta su método cuando se le da clic
+    //Cada boton ejecuta su metodo cuando se hace clic (como el getBotonTirar, hace que se tiren los dados, el getBotonPlantarse hace que te plantes, etc)
     private void conectarEventosJuego() {
         vista.getBotonTirar().setOnAction(evento -> {
             alPresionarTirar();
@@ -71,7 +69,7 @@ public class ControladorFarkle {
             alPresionarPlantarse();
         });
 
-        for (int i = 0; i < vista.getBotonesDados().size(); i = i + 1) {
+        for (int i = 0; i < vista.getBotonesDados().size(); i++) {
             int indice = i;
             vista.getBotonesDados().get(i).setOnAction(evento -> {
                 alPresionarDado(indice);
@@ -79,6 +77,7 @@ public class ControladorFarkle {
         }
     }
 
+    // Selecciona o desmarca el dado al que se le dio clic (solo si juega una persona)
     private void alPresionarDado(int indice) {
         if (juego.jugadorActual().esHumano() == false) {
             return;
@@ -88,12 +87,13 @@ public class ControladorFarkle {
         vista.actualizar();
     }
 
+    //Aparte los dados que hayas seleccionado y tira el resto. (esto es cuando se seleccionan dados se tiran otros)
     private void alPresionarTirar() {
         if (juego.jugadorActual().esHumano() == false) {
             return;
         }
 
-        if (juego.isTiradaPendiente() == true) {
+        if (juego.tiradaEstaPendiente() == true) {
             boolean seApartaron = juego.apartarSeleccion();
             if (seApartaron == false) {
                 vista.actualizar();
@@ -106,12 +106,13 @@ public class ControladorFarkle {
         revisarTurnoComputadora();
     }
 
+    //Igual al anterior pero con los puntos, guarda los puntos de tus dados seleccionados
     private void alPresionarPlantarse() {
         if (juego.jugadorActual().esHumano() == false) {
             return;
         }
 
-        if (juego.isTiradaPendiente() == true) {
+        if (juego.tiradaEstaPendiente() == true) {
             boolean seApartaron = juego.apartarSeleccion();
             if (seApartaron == false) {
                 vista.actualizar();
@@ -124,22 +125,19 @@ public class ControladorFarkle {
         revisarTurnoComputadora();
     }
 
-    // Si le toca a una computadora, juega un paso cada 1.2 segundos
-    // LAMBDA: lo que se hace cuando termina la pausa
+    //Si juega la computadora, este metodo hace que se tarde un poco más para poder visualizarlo
     private void revisarTurnoComputadora() {
-        if (juego.isJuegoTerminado() == true) {
+        if (juego.juegoEstaTerminado() == true) {
             return;
         }
         if (juego.jugadorActual().esHumano() == true) {
             return;
         }
 
-        PauseTransition pausa = new PauseTransition(Duration.seconds(1.2));
-        pausa.setOnFinished(evento -> {
+        vista.esperarPaso(() -> {
             juego.jugarPasoComputadora();
             vista.actualizar();
             revisarTurnoComputadora();
         });
-        pausa.play();
     }
 }

@@ -9,14 +9,13 @@ import org.uabc.ic.farklejavafx.modelo.JugadorHumano;
 import org.uabc.ic.farklejavafx.modelo.Puntuacion;
 
 /**
- * Clase que tiene el control del juego. Aquí están TODAS las reglas;
- * la interfaz gráfica solo muestra lo que hay aquí y manda las acciones del jugador.
+ * Esta clase tiene el control del juego en base a las REGLAS. Contiene todos los combos que pueden hacerse.
  */
 public class JuegoFarkle {
 
     private static final int CANTIDAD_DADOS = 6;
-    private static final int PUNTOS_PARA_ENTRAR = 500;
-    private static final int PUNTOS_PARA_GANAR = 10000;
+    private static final int PUNTOS_PARA_ENTRAR = 200;
+    private static final int PUNTOS_PARA_GANAR = 2000;
 
     private ArrayList<Jugador> jugadores;
     private ArrayList<Dado> dados;
@@ -24,33 +23,34 @@ public class JuegoFarkle {
 
     private int turnoActual;
     private int puntosTurno;
-    private boolean tiradaPendiente;   // ya se tiraron los dados y falta apartar
+    private boolean tiradaPendiente;
     private boolean ultimaRonda;
     private int jugadorQueLlegoAMeta;
     private boolean juegoTerminado;
     private String mensaje;
 
+    //Crea el juego inicial con las personas y bots, y planta los 6 dados
     public JuegoFarkle(int humanos, int computadoras) {
         jugadores = new ArrayList<>();
         dados = new ArrayList<>();
         combosTurno = new ArrayList<>();
 
-        for (int i = 1; i <= humanos; i = i + 1) {
+        for (int i = 1; i <= humanos; i++) {
             jugadores.add(new JugadorHumano("Jugador " + i));
         }
 
-        for (int i = 1; i <= computadoras; i = i + 1) {
-            jugadores.add(new JugadorComputadora("Compu " + i));
+        for (int i = 1; i <= computadoras; i++) {
+            jugadores.add(new JugadorComputadora("Bot " + i));
         }
 
-        // Si solo hay un humano (o nadie), se agrega una computadora automáticamente
+        //Aqui es donde se agrega un bot automaticamente si es que solo se eligio un jugador
         int totalComputadoras = computadoras;
         while (jugadores.size() < 2) {
             totalComputadoras = totalComputadoras + 1;
-            jugadores.add(new JugadorComputadora("Compu " + totalComputadoras));
+            jugadores.add(new JugadorComputadora("Bot " + totalComputadoras));
         }
 
-        for (int i = 0; i < CANTIDAD_DADOS; i = i + 1) {
+        for (int i = 0; i < CANTIDAD_DADOS; i++) {
             dados.add(new Dado());
         }
 
@@ -63,14 +63,12 @@ public class JuegoFarkle {
         mensaje = "Turno de " + jugadorActual().getNombre() + ".";
     }
 
-    // ---------------------------------------------------------------
-    // Acciones del jugador
-    // ---------------------------------------------------------------
+    //==== Aqui es donde se administran las acciones que puede hacer el jugador
 
-    // Tira los dados que no están apartados
+    //Aqui se tiran los dados que no esten apartados
     public void tirar() {
         for (Dado dado : dados) {
-            if (dado.isApartado() == false) {
+            if (dado.estaApartado() == false) {
                 dado.tirar();
             }
         }
@@ -83,30 +81,30 @@ public class JuegoFarkle {
         }
     }
 
-    // Marca o desmarca un dado para apartarlo
+    //Aqui es donde se marca o se desmarca un dado para apartarlo
     public void seleccionarDado(int indice) {
         Dado dado = dados.get(indice);
 
         if (tiradaPendiente == false) {
             return;
         }
-        if (dado.isApartado() == true) {
+        if (dado.estaApartado() == true) {
             return;
         }
 
-        if (dado.isSeleccionado() == true) {
+        if (dado.estaSeleccionado() == true) {
             dado.setSeleccionado(false);
         } else {
             dado.setSeleccionado(true);
         }
     }
 
-    // Aparta los dados seleccionados y suma sus puntos al turno
+    //Aqui es donde se apartan los dados seleccionados y se suman sus puntos
     public boolean apartarSeleccion() {
         ArrayList<Integer> valores = valoresSeleccionados();
 
         if (valores.size() == 0) {
-            mensaje = "Selecciona al menos un dado que valga puntos.";
+            mensaje = "Tienes que seleccionar al menos un dado que valga puntos.";
             return false;
         }
 
@@ -121,7 +119,7 @@ public class JuegoFarkle {
         mensaje = "Combos: " + String.join(", ", combosTurno);
 
         for (Dado dado : dados) {
-            if (dado.isSeleccionado() == true) {
+            if (dado.estaSeleccionado() == true) {
                 dado.setApartado(true);
                 dado.setSeleccionado(false);
             }
@@ -130,7 +128,7 @@ public class JuegoFarkle {
 
         if (todosApartados() == true) {
             limpiarDados();
-            mensaje = mensaje + " ¡Los 6 dados valieron! Puedes tirar los 6 otra vez.";
+            mensaje = mensaje + " Los 6 dados valen puntos, puedes tirar los 6 otra vez.";
         }
 
         return true;
@@ -147,7 +145,7 @@ public class JuegoFarkle {
 
         if (jugador.estaEnJuego() == false && puntosTurno < PUNTOS_PARA_ENTRAR) {
             mensaje = "Necesitas al menos " + PUNTOS_PARA_ENTRAR
-                    + " puntos en un turno para anotar por primera vez.";
+                    + " puntos en un turno para tirar por primera vez.";
             return false;
         }
 
@@ -157,18 +155,17 @@ public class JuegoFarkle {
         if (jugador.getPuntos() >= PUNTOS_PARA_GANAR && ultimaRonda == false) {
             ultimaRonda = true;
             jugadorQueLlegoAMeta = turnoActual;
-            mensaje = mensaje + " ¡Llegó a " + PUNTOS_PARA_GANAR
-                    + "! Los demás tienen un último turno.";
+            mensaje = mensaje + " Llego a " + PUNTOS_PARA_GANAR
+                    + ", Los demás tienen un último turno.";
         }
 
         pasarTurno();
         return true;
     }
 
-    // ---------------------------------------------------------------
-    // Jugador no humano: cada llamada hace un solo paso
-    // ---------------------------------------------------------------
+    //===== Metodos del bot, cada llamada hace un paso.
 
+    //Aqui donde se decide si tira o aparta dados que valen, y decide si se planta o no (siendo esta como el metodo principal del bot)
     public void jugarPasoComputadora() {
         if (juegoTerminado == true) {
             return;
@@ -187,13 +184,14 @@ public class JuegoFarkle {
         }
     }
 
+    // El bot selecciona los dados que valen puntos
     private void seleccionarDadosQueValenPuntos() {
         ArrayList<Integer> valores = valoresDisponibles();
         int[] conteo = Puntuacion.contar(valores);
         boolean todosValen = Puntuacion.calcular(valores) > 0;
 
         for (Dado dado : dados) {
-            if (dado.isApartado() == false) {
+            if (dado.estaApartado() == false) {
                 int valor = dado.getValor();
 
                 if (todosValen == true) {
@@ -205,6 +203,7 @@ public class JuegoFarkle {
         }
     }
 
+    // El bot decide si ya se planta o sigue tirando
     private boolean debePlantarse() {
         Jugador jugador = jugadorActual();
         int total = jugador.getPuntos() + puntosTurno;
@@ -214,7 +213,7 @@ public class JuegoFarkle {
             return false;
         }
 
-        // Última ronda: sigue hasta superar al que va ganando
+        // En la ultima ronda el bot sigue hasta perder o tener una puntuacion ganadora 
         if (ultimaRonda == true) {
             if (total > jugadorConMasPuntos().getPuntos()) {
                 return true;
@@ -235,10 +234,9 @@ public class JuegoFarkle {
         return false;
     }
 
-    // ---------------------------------------------------------------
-    // Métodos de apoyo
-    // ---------------------------------------------------------------
+    // Otros metodos (no tienen que ver con los bots o las personas)
 
+    //Termina el turno y limpia los dados, avanza al siguiente jugador y finalmente revisa si se acabo el juego
     private void pasarTurno() {
         puntosTurno = 0;
         tiradaPendiente = false;
@@ -258,7 +256,7 @@ public class JuegoFarkle {
         mensaje = mensaje + " Turno de " + jugadorActual().getNombre() + ".";
     }
 
-    // LAMBDA: quita lo apartado y lo seleccionado de todos los dados
+    //Aqui es donde se quitan lo "seleccionado" de los dados
     private void limpiarDados() {
         dados.forEach(dado -> {
             dado.setApartado(false);
@@ -266,7 +264,7 @@ public class JuegoFarkle {
         });
     }
 
-    // LAMBDA: ordena una copia de la lista de mayor a menor puntaje
+    //Ordena a los jugadores por puntos, para mostrar primero al de mayor puntaje y al ultimo con menor puntaje
     private Jugador jugadorConMasPuntos() {
         ArrayList<Jugador> ordenados = new ArrayList<>(jugadores);
         ordenados.sort((jugadorA, jugadorB) -> {
@@ -275,38 +273,42 @@ public class JuegoFarkle {
         return ordenados.get(0);
     }
 
+    //Administra los valores que todavia no se han apartado
     private ArrayList<Integer> valoresDisponibles() {
         ArrayList<Integer> valores = new ArrayList<>();
-        for (Dado dado : dados) {
-            if (dado.isApartado() == false) {
+        for (int i = 0; i < dados.size(); i++) {
+            Dado dado = dados.get(i);
+            if (dado.estaApartado() == false) {
                 valores.add(dado.getValor());
             }
         }
         return valores;
     }
 
+    //Administra los valores que estan seleccionados
     private ArrayList<Integer> valoresSeleccionados() {
         ArrayList<Integer> valores = new ArrayList<>();
-        for (Dado dado : dados) {
-            if (dado.isSeleccionado() == true) {
+        for (int i = 0; i < dados.size(); i++) {
+            Dado dado = dados.get(i);
+            if (dado.estaSeleccionado() == true) {
                 valores.add(dado.getValor());
             }
         }
         return valores;
     }
 
+    //Regresa true si los 6 dados ya estan apartados
     private boolean todosApartados() {
-        for (Dado dado : dados) {
-            if (dado.isApartado() == false) {
+        for (int i = 0; i < dados.size(); i++) {
+            Dado dado = dados.get(i);
+            if (dado.estaApartado() == false) {
                 return false;
             }
         }
         return true;
     }
 
-    // ---------------------------------------------------------------
-    // Getters para que la vista y el controlador lean el estado
-    // ---------------------------------------------------------------
+    // getters y setters
 
     public Jugador jugadorActual() {
         return jugadores.get(turnoActual);
@@ -328,15 +330,22 @@ public class JuegoFarkle {
         return puntosTurno;
     }
 
-    public boolean isTiradaPendiente() {
+    public boolean tiradaEstaPendiente() {
         return tiradaPendiente;
     }
 
-    public boolean isJuegoTerminado() {
+    public boolean juegoEstaTerminado() {
         return juegoTerminado;
     }
 
     public String getMensaje() {
         return mensaje;
+    }
+
+    public String getCombosPosibles() {
+        if (tiradaPendiente == false) {
+            return "Tira los dados para ver tus combos disponibles";
+        }
+        return Puntuacion.combosPosibles(valoresDisponibles());
     }
 }

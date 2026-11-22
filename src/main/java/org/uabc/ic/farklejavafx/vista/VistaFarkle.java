@@ -19,7 +19,7 @@ import javafx.scene.layout.VBox;
  */
 public class VistaFarkle {
 
-    private static final String[] CARAS = {"⚀", "⚁", "⚂", "⚃", "⚄", "⚅"};
+    private static final String[] CARAS = {"1", "2", "3", "4", "5", "6"};
 
     private static final String ESTILO_BASE = "-fx-font-size: 56px; -fx-border-color: black; "
             + "-fx-border-radius: 10; -fx-background-radius: 10; ";

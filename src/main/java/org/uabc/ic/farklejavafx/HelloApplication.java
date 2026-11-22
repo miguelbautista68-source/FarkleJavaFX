@@ -1,19 +1,19 @@
 package org.uabc.ic.farklejavafx;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
-import java.io.IOException;
+import org.uabc.ic.farklejavafx.controlador.ControladorFarkle;
+import org.uabc.ic.farklejavafx.vista.VistaFarkle;
 
 public class HelloApplication extends Application {
     @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("Hello!");
-        stage.setScene(scene);
-        stage.show();
+    public void start(Stage ventana) {
+        VistaFarkle vista = new VistaFarkle();
+        new ControladorFarkle(vista);
+
+        ventana.setTitle("Farkle");
+        ventana.setScene(new Scene(vista.getRaiz(), 850, 480));
+        ventana.show();
     }
 }

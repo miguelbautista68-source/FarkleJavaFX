@@ -67,7 +67,7 @@ public class Puntuacion {
         return total;
     }
 
-    //==== Aqui es donde se declaran los metodos estaticos de cada combo
+    //Aqui es donde se declaran los metodos estaticos de cada combo
 
     private static boolean esEscalera(int[] conteo) {
         return cuantosTienen(conteo, 1) == 6;

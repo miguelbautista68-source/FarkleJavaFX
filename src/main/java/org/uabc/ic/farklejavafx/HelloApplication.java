@@ -7,7 +7,6 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-//Clase principal del JavaFx, arma la ventana y conecta la vista con el controlador
 public class HelloApplication extends Application {
 
     @Override
